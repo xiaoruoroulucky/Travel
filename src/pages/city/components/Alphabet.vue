@@ -1,0 +1,87 @@
+<template>
+    <ul class="list">
+      <li
+        class="item"
+        v-for="item of letters"
+        :key="item"
+        @click="handleLetterClick"
+        @touchstart.prevent = "handleTouchStart"
+        @touchmove = "handleTouchMove"
+        @touchend = "handleTouchEnd"
+        :ref="item"
+      >
+        {{item}}
+      </li>
+    </ul>
+</template>
+
+<script>
+    export default {
+        name: "CityAlphabet",
+        props:{
+          cities:Object
+        },
+        computed:{
+          letters:function () {
+            const letters = [];
+            for(let i in this.cities){
+                letters.push(i);
+            }
+            return letters;
+          }
+        },
+        data:function(){
+          return {
+            touchStatus:false,
+            startY:0,
+            timer:null
+          }
+        },
+        updated:function(){
+          this.startY = this.$refs['A'][0].offsetTop;
+        },
+        methods:{
+          handleLetterClick:function (e) {
+            this.$emit('change',e.target.innerText);
+          },
+          handleTouchStart:function () {
+             this.touchStatus = true;
+          },
+          handleTouchMove:function (e) {
+              if(this.touchStatus){
+                  if(this.timer){
+                    clearTimeout(this.timer);
+                  }
+                  let that = this;
+                  this.timer = setTimeout(function () {
+                      const touchY = e.touches[0].clientY - 79;
+                      const index =Math.floor((touchY - that.startY) / 16);
+                      if(index >=0 && index < that.letters.length){
+                        that.$emit('change',that.letters[index]);
+                      }
+                  },16);
+              }
+          },
+          handleTouchEnd:function () {
+              this.touchStatus = false;
+          }
+        }
+    }
+</script>
+
+<style lang="stylus" scoped>
+  @import "~styles/varibles.styl"
+  .list
+    display flex
+    flex-direction column
+    justify-content center
+    position absolute
+    right 0
+    top 1.58rem
+    bottom 0
+    width .4rem
+    .item
+      text-align center
+      line-height .33rem
+      color $bgColor
+</style>
